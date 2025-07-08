@@ -489,20 +489,34 @@ app.patch("/api/tasks/reorder", authenticateToken, async (req, res) => {
 });
 
 // ==============================
-// Static Files & SPA Routing
+// Static Files & SPA Routing (Production Only)
 // ==============================
 
 // ESM workaround for __dirname
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, "public")));
+// Only serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from the 'public' directory
+  app.use(express.static(path.join(__dirname, "public")));
 
-// Catch-all route for SPA routing (send index.html for unmatched routes)
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+  // Catch-all route for SPA routing (send index.html for unmatched routes)
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  });
+} else {
+  // In development, just return a simple message for non-API routes
+  app.get("*", (req, res) => {
+    if (!req.path.startsWith('/api')) {
+      res.json({ 
+        message: "Backend API server running", 
+        frontend: "http://localhost:5173",
+        docs: "/api" 
+      });
+    }
+  });
+}
 
 // ==============================
 // Start the Server
@@ -511,7 +525,9 @@ app.get("*", (req, res) => {
 export { app, pool };
 
 // Only start the server if this file is run directly (not during tests)
-if (require.main === module) {
+// Note: In ES modules, we can't use require.main === module, so we'll check if this is the main module
+const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+if (isMainModule) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

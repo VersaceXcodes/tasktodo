@@ -36,6 +36,7 @@ export default defineConfig({
 	server: {
 		host: true,
 		allowedHosts: true,
+		port: 5174,
 	},
 	resolve: {
 		alias: {
