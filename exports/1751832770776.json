@@ -1,0 +1,19 @@
+{
+  "timestamp": 1751832770776,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "GV_TopNav_Unauth",
+      "version": "1751832564573"
+    }
+  },
+  "projectId": "a-simple-to-do-to-manage-a-project",
+  "files": [
+    {
+      "path": "../../apps/a-simple-to-do-to-manage-a-project/vitereact/src/components/views/GV_TopNav_Unauth.tsx",
+      "type": "text",
+      "size": 2582,
+      "dependencies": false
+    }
+  ]
+}

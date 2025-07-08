@@ -1,0 +1,19 @@
+{
+  "timestamp": 1751832630442,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_Signup",
+      "version": "latest"
+    }
+  },
+  "projectId": "a-simple-to-do-to-manage-a-project",
+  "files": [
+    {
+      "path": "../../apps/a-simple-to-do-to-manage-a-project/vitereact/src/components/views/UV_Signup.tsx",
+      "type": "text",
+      "size": 5049,
+      "dependencies": false
+    }
+  ]
+}

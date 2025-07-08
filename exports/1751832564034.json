@@ -1,0 +1,19 @@
+{
+  "timestamp": 1751832564034,
+  "operation": {
+    "id": "webapp:react:root",
+    "refs": {
+      "id": "app",
+      "version": "1751832529092"
+    }
+  },
+  "projectId": "a-simple-to-do-to-manage-a-project",
+  "files": [
+    {
+      "path": "../../apps/a-simple-to-do-to-manage-a-project/vitereact/src/App.tsx",
+      "type": "text",
+      "size": 2613,
+      "dependencies": false
+    }
+  ]
+}

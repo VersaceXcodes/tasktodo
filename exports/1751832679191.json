@@ -1,0 +1,19 @@
+{
+  "timestamp": 1751832679191,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_NewTaskModal",
+      "version": "1751832564549"
+    }
+  },
+  "projectId": "a-simple-to-do-to-manage-a-project",
+  "files": [
+    {
+      "path": "../../apps/a-simple-to-do-to-manage-a-project/vitereact/src/components/views/UV_NewTaskModal.tsx",
+      "type": "text",
+      "size": 7001,
+      "dependencies": false
+    }
+  ]
+}

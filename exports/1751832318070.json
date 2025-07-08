@@ -1,0 +1,21 @@
+{
+  "timestamp": 1751832318070,
+  "operation": {
+    "id": "backend:tests:main"
+  },
+  "projectId": "a-simple-to-do-to-manage-a-project",
+  "files": [
+    {
+      "path": "../../apps/a-simple-to-do-to-manage-a-project/backend/server.test.js",
+      "type": "text",
+      "size": 14314,
+      "dependencies": false
+    },
+    {
+      "path": "../../apps/a-simple-to-do-to-manage-a-project/backend/jest.config.js",
+      "type": "text",
+      "size": 68,
+      "dependencies": false
+    }
+  ]
+}

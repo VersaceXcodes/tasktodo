@@ -1,0 +1,15 @@
+{
+  "timestamp": 1751832239299,
+  "operation": {
+    "id": "backend:server:main"
+  },
+  "projectId": "a-simple-to-do-to-manage-a-project",
+  "files": [
+    {
+      "path": "../../apps/a-simple-to-do-to-manage-a-project/backend/server.ts",
+      "type": "text",
+      "size": 16844,
+      "dependencies": false
+    }
+  ]
+}

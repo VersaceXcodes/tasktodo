@@ -1,0 +1,15 @@
+{
+  "timestamp": 1751832528264,
+  "operation": {
+    "id": "settings:config:package"
+  },
+  "projectId": "a-simple-to-do-to-manage-a-project",
+  "files": [
+    {
+      "path": "../../apps/a-simple-to-do-to-manage-a-project/vitereact/package.json",
+      "type": "text",
+      "size": 2910,
+      "dependencies": true
+    }
+  ]
+}

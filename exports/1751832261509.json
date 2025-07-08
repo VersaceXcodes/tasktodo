@@ -1,0 +1,15 @@
+{
+  "timestamp": 1751832261509,
+  "operation": {
+    "id": "settings:config:package"
+  },
+  "projectId": "a-simple-to-do-to-manage-a-project",
+  "files": [
+    {
+      "path": "../../apps/a-simple-to-do-to-manage-a-project/backend/.env",
+      "type": "text",
+      "size": 472,
+      "dependencies": false
+    }
+  ]
+}

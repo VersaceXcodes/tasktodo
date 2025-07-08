@@ -1,0 +1,15 @@
+{
+  "timestamp": 1751831985598,
+  "operation": {
+    "id": "db:schemas:zod"
+  },
+  "projectId": "a-simple-to-do-to-manage-a-project",
+  "files": [
+    {
+      "path": "../../apps/a-simple-to-do-to-manage-a-project/backend/schema.ts",
+      "type": "text",
+      "size": 6904,
+      "dependencies": false
+    }
+  ]
+}

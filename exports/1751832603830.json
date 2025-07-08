@@ -1,0 +1,19 @@
+{
+  "timestamp": 1751832603830,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_Login",
+      "version": "latest"
+    }
+  },
+  "projectId": "a-simple-to-do-to-manage-a-project",
+  "files": [
+    {
+      "path": "../../apps/a-simple-to-do-to-manage-a-project/vitereact/src/components/views/UV_Login.tsx",
+      "type": "text",
+      "size": 4500,
+      "dependencies": false
+    }
+  ]
+}
