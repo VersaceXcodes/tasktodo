@@ -514,12 +514,12 @@ app.patch("/api/tasks/reorder", authenticateToken, async (req, res) => {
 // const __dirname = path.dirname(__filename);
 
 // Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, "public")));
+// app.use(express.static(path.join(__dirname, "public")));
 
-// Catch-all route for SPA routing (send index.html for unmatched routes)
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+// // Catch-all route for SPA routing (send index.html for unmatched routes)
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "public", "index.html"));
+// });
 
 // ==============================
 // Start the Server
