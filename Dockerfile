@@ -19,8 +19,8 @@ RUN npm install -g tsx
 # Copy backend source
 COPY backend/ ./
 
-# Copy built frontend assets to backend's public directory
-COPY --from=frontend-build /app/vitereact/dist ./public
+# Copy built frontend assets from the correct location (public, not dist)
+COPY --from=frontend-build /app/vitereact/public ./public
 
 # Set up environment
 EXPOSE 3000
