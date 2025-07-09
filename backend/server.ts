@@ -68,7 +68,7 @@ const app = express();
 // Middleware to parse JSON bodies
 app.use(express.json());
 // Enable CORS for all origins
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 // Logger middleware for detailed request logging
 app.use(morgan("dev"));
 
