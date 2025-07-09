@@ -65,10 +65,13 @@ const pool = new Pool(
 // ==============================
 const app = express();
 
+// CORS FIRST - before any other middleware
+app.use(cors({ origin: true, credentials: true }));
+app.options('*', cors({ origin: true, credentials: true }));
+
 // Middleware to parse JSON bodies
 app.use(express.json());
-// Enable CORS for all origins
-app.use(cors({ origin: true, credentials: true }));
+
 // Logger middleware for detailed request logging
 app.use(morgan("dev"));
 
