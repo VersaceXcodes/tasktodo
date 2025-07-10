@@ -66,13 +66,7 @@ const pool = new Pool(
 const app = express();
 
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || origin.endsWith('.a.free.pinggy.link')) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: '*',  // Allow all origins temporarily
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
