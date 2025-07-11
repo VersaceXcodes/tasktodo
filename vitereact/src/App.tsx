@@ -24,7 +24,8 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,
-      refetchOnWindowFocus: false
+      refetchOnWindowFocus: false,
+      staleTime: Infinity
     }
   }
 });
@@ -42,7 +43,7 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col" data-testid="app-container">
           {isAuthenticated ? <GV_TopNav_Auth /> : <GV_TopNav_Unauth />}
           
           <main className="flex-grow">
