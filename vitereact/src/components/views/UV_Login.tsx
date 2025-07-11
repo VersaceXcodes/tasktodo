@@ -113,7 +113,7 @@ const UV_Login: React.FC = () => {
         {errorMessage && (
           <div 
             role="alert"
-            aria-live="polite"
+            aria-live="assertive"
             id="login-error"
             className="p-2 text-sm text-red-600 bg-red-100 border border-red-400 rounded"
           >
@@ -131,7 +131,7 @@ const UV_Login: React.FC = () => {
               name="email"
               aria-label="Email address"
               aria-required="true"
-              aria-invalid={email !== "" && !validateEmail(email)}
+              aria-invalid={!!email && !validateEmail(email)}
               aria-describedby={errorMessage ? "login-error" : undefined}
               className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={email}
@@ -150,7 +150,7 @@ const UV_Login: React.FC = () => {
               name="password"
               aria-label="Password"
               aria-required="true"
-              aria-invalid={password !== "" && !validatePassword(password)}
+              aria-invalid={!!password && !validatePassword(password)}
               aria-describedby={errorMessage ? "login-error" : undefined}
               className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={password}
@@ -163,7 +163,7 @@ const UV_Login: React.FC = () => {
             type="submit"
             disabled={isSubmitting}
             aria-busy={isSubmitting}
-            aria-label={isSubmitting ? "Logging in..." : "Login"}
+            aria-disabled={isSubmitting}
             className="w-full px-4 py-2 font-semibold text-white bg-blue-500 rounded hover:bg-blue-600 disabled:opacity-50"
           >
             {isSubmitting ? "Logging in..." : "Login"}
@@ -174,7 +174,7 @@ const UV_Login: React.FC = () => {
           <Link 
             to="/signup" 
             className="text-blue-500 hover:underline"
-            aria-label="Sign up for an account"
+            role="link"
           >
             Sign Up
           </Link>

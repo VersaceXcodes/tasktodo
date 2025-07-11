@@ -32,46 +32,53 @@ const queryClient = new QueryClient({
   }
 });
 
+const ProtectedRoute = memo(({ children }: { children: React.ReactNode }) => {
+  const { auth_token, current_user } = useAppStore();
+  const isAuthenticated = Boolean(auth_token && current_user);
+  
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+});
+
+const PublicRoute = memo(({ children }: { children: React.ReactNode }) => {
+  const { auth_token, current_user } = useAppStore();
+  const isAuthenticated = Boolean(auth_token && current_user);
+  
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+});
+
 const App: React.FC = memo(() => {
   const { auth_token, current_user, init_socket } = useAppStore();
   const isAuthenticated = Boolean(auth_token && current_user);
 
-  const initializeSocket = useCallback(async () => {
-    if (isAuthenticated) {
-      return await init_socket();
-    }
-    return undefined;
-  }, [isAuthenticated, init_socket]);
+  useEffect(() => {
+    document.title = "Task Management App";
+  }, []);
 
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.title = "Task Management App";
-    }
-    
     let socketCleanup: (() => void) | undefined;
-    
-    initializeSocket().then(cleanup => {
-      socketCleanup = cleanup;
-    });
+
+    const initializeSocket = async () => {
+      if (isAuthenticated) {
+        try {
+          socketCleanup = await init_socket();
+        } catch (error) {
+          console.error('Socket initialization failed:', error);
+        }
+      }
+    };
+
+    initializeSocket();
 
     return () => {
-      if (socketCleanup) socketCleanup();
+      if (socketCleanup) {
+        try {
+          socketCleanup();
+        } catch (error) {
+          console.error('Socket cleanup failed:', error);
+        }
+      }
     };
-  }, [initializeSocket]);
-
-  const ProtectedRoute = memo(({ children }: { children: React.ReactNode }) => {
-    if (!isAuthenticated) {
-      return <Navigate to="/login" replace />;
-    }
-    return <>{children}</>;
-  });
-
-  const PublicRoute = memo(({ children }: { children: React.ReactNode }) => {
-    if (isAuthenticated) {
-      return <Navigate to="/dashboard" replace />;
-    }
-    return <>{children}</>;
-  });
+  }, [isAuthenticated, init_socket]);
 
   return (
     <QueryClientProvider client={queryClient}>
