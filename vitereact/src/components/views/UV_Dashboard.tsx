@@ -102,7 +102,8 @@ const UV_Dashboard: React.FC = () => {
     },
     retry: 2,
     staleTime: 30000,
-    cacheTime: 3600000
+    cacheTime: 3600000,
+    enabled: !!authToken
   });
 
   const markTaskMutation = useMutation<Task, Error, Task>(
@@ -202,5 +203,4 @@ const UV_Dashboard: React.FC = () => {
 
   const handleFilterStatus = (status: "all" | "active" | "completed"): void => {
     let is_completed: boolean | null = null;
-    if (status === "active") is_completed = false;
-    else if (
+    if (status === "active") is_

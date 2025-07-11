@@ -1,4 +1,4 @@
-import React, { useEffect, memo } from "react";
+import React, { useEffect, memo, useCallback } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -25,9 +25,9 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 300000, // 5 minutes
+      staleTime: 300000,
       suspense: false,
-      cacheTime: 3600000 // 1 hour
+      cacheTime: 3600000
     }
   }
 });
@@ -36,27 +36,42 @@ const App: React.FC = memo(() => {
   const { auth_token, current_user, init_socket } = useAppStore();
   const isAuthenticated = Boolean(auth_token && current_user);
 
+  const initializeSocket = useCallback(async () => {
+    if (isAuthenticated) {
+      return await init_socket();
+    }
+    return undefined;
+  }, [isAuthenticated, init_socket]);
+
   useEffect(() => {
-    document.title = "Task Management App";
+    if (typeof document !== 'undefined') {
+      document.title = "Task Management App";
+    }
     
     let socketCleanup: (() => void) | undefined;
     
-    if (isAuthenticated) {
-      socketCleanup = init_socket();
-    }
+    initializeSocket().then(cleanup => {
+      socketCleanup = cleanup;
+    });
 
     return () => {
       if (socketCleanup) socketCleanup();
     };
-  }, [isAuthenticated, init_socket]);
+  }, [initializeSocket]);
 
-  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
-  };
+  const ProtectedRoute = memo(({ children }: { children: React.ReactNode }) => {
+    if (!isAuthenticated) {
+      return <Navigate to="/login" replace />;
+    }
+    return <>{children}</>;
+  });
 
-  const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-    return !isAuthenticated ? <>{children}</> : <Navigate to="/dashboard" />;
-  };
+  const PublicRoute = memo(({ children }: { children: React.ReactNode }) => {
+    if (isAuthenticated) {
+      return <Navigate to="/dashboard" replace />;
+    }
+    return <>{children}</>;
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -65,19 +80,17 @@ const App: React.FC = memo(() => {
           {isAuthenticated ? <GV_TopNav_Auth /> : <GV_TopNav_Unauth />}
           
           <main className="flex-grow">
-            <React.Suspense fallback={<div>Loading...</div>}>
-              <Routes>
-                <Route path="/" element={<PublicRoute><UV_Landing /></PublicRoute>} />
-                <Route path="/login" element={<PublicRoute><UV_Login /></PublicRoute>} />
-                <Route path="/signup" element={<PublicRoute><UV_Signup /></PublicRoute>} />
-                <Route path="/dashboard" element={<ProtectedRoute><UV_Dashboard /></ProtectedRoute>} />
-                <Route path="/dashboard/new-task" element={<ProtectedRoute><UV_NewTaskModal /></ProtectedRoute>} />
-                <Route path="/dashboard/edit-task/:id" element={<ProtectedRoute><UV_EditTaskModal /></ProtectedRoute>} />
-                <Route path="/dashboard/confirm-delete/:id" element={<ProtectedRoute><UV_ConfirmationModal /></ProtectedRoute>} />
-                <Route path="/dashboard/onboarding" element={<ProtectedRoute><UV_OnboardingOverlay /></ProtectedRoute>} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </React.Suspense>
+            <Routes>
+              <Route path="/" element={<PublicRoute><UV_Landing /></PublicRoute>} />
+              <Route path="/login" element={<PublicRoute><UV_Login /></PublicRoute>} />
+              <Route path="/signup" element={<PublicRoute><UV_Signup /></PublicRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><UV_Dashboard /></ProtectedRoute>} />
+              <Route path="/dashboard/new-task" element={<ProtectedRoute><UV_NewTaskModal /></ProtectedRoute>} />
+              <Route path="/dashboard/edit-task/:id" element={<ProtectedRoute><UV_EditTaskModal /></ProtectedRoute>} />
+              <Route path="/dashboard/confirm-delete/:id" element={<ProtectedRoute><UV_ConfirmationModal /></ProtectedRoute>} />
+              <Route path="/dashboard/onboarding" element={<ProtectedRoute><UV_OnboardingOverlay /></ProtectedRoute>} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           </main>
 
           <GV_Footer />
@@ -88,5 +101,7 @@ const App: React.FC = memo(() => {
 });
 
 App.displayName = 'App';
+ProtectedRoute.displayName = 'ProtectedRoute';
+PublicRoute.displayName = 'PublicRoute';
 
 export default App;

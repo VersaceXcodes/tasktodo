@@ -114,6 +114,7 @@ const UV_Login: React.FC = () => {
           <div 
             role="alert"
             aria-live="polite"
+            id="login-error"
             className="p-2 text-sm text-red-600 bg-red-100 border border-red-400 rounded"
           >
             {errorMessage}
