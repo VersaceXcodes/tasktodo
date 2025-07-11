@@ -20,7 +20,14 @@ import UV_OnboardingOverlay from './components/views/UV_OnboardingOverlay';
 /* import the global state hook from Zustand */
 import { useAppStore } from './store/main';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false
+    }
+  }
+});
 
 const App: React.FC = () => {
   const { auth_token, current_user, init_socket } = useAppStore();
@@ -30,24 +37,24 @@ const App: React.FC = () => {
     if (isAuthenticated) {
       init_socket();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, init_socket]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        {isAuthenticated ? <GV_TopNav_Auth /> : <GV_TopNav_Unauth />}
-
         <div className="min-h-screen flex flex-col">
+          {isAuthenticated ? <GV_TopNav_Auth /> : <GV_TopNav_Unauth />}
+          
           <main className="flex-grow">
             <Routes>
-              <Route path="/" element={<UV_Landing />} />
-              <Route path="/login" element={<UV_Login />} />
-              <Route path="/signup" element={<UV_Signup />} />
-              <Route path="/dashboard" element={<UV_Dashboard />} />
-              <Route path="/dashboard/new-task" element={<UV_NewTaskModal />} />
-              <Route path="/dashboard/edit-task/:id" element={<UV_EditTaskModal />} />
-              <Route path="/dashboard/confirm-delete/:id" element={<UV_ConfirmationModal />} />
-              <Route path="/dashboard/onboarding" element={<UV_OnboardingOverlay />} />
+              <Route path="/" element={!isAuthenticated ? <UV_Landing /> : <UV_Dashboard />} />
+              <Route path="/login" element={!isAuthenticated ? <UV_Login /> : <UV_Dashboard />} />
+              <Route path="/signup" element={!isAuthenticated ? <UV_Signup /> : <UV_Dashboard />} />
+              <Route path="/dashboard" element={isAuthenticated ? <UV_Dashboard /> : <UV_Login />} />
+              <Route path="/dashboard/new-task" element={isAuthenticated ? <UV_NewTaskModal /> : <UV_Login />} />
+              <Route path="/dashboard/edit-task/:id" element={isAuthenticated ? <UV_EditTaskModal /> : <UV_Login />} />
+              <Route path="/dashboard/confirm-delete/:id" element={isAuthenticated ? <UV_ConfirmationModal /> : <UV_Login />} />
+              <Route path="/dashboard/onboarding" element={isAuthenticated ? <UV_OnboardingOverlay /> : <UV_Login />} />
             </Routes>
           </main>
 
