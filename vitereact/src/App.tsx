@@ -36,37 +36,36 @@ const ProtectedRoute = memo(({ children }: { children: React.ReactNode }) => {
   const { auth_token, current_user } = useAppStore();
   const isAuthenticated = Boolean(auth_token && current_user);
   
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
 });
 
 const PublicRoute = memo(({ children }: { children: React.ReactNode }) => {
   const { auth_token, current_user } = useAppStore();
   const isAuthenticated = Boolean(auth_token && current_user);
   
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <>{children}</>;
 });
 
 const App = () => {
   const { auth_token, current_user, init_socket } = useAppStore();
   const isAuthenticated = Boolean(auth_token && current_user);
 
-  const initializeMeta = useCallback(() => {
-    if (typeof document !== 'undefined') {
-      document.title = "Task Management App";
-      
-      const metaDescription = document.head.querySelector('meta[name="description"]');
-      if (!metaDescription) {
-        const newMetaDescription = document.createElement('meta');
-        newMetaDescription.name = 'description';
-        newMetaDescription.content = 'Task Management Application';
-        document.head.appendChild(newMetaDescription);
-      }
+  useEffect(() => {
+    document.title = "Task Management App";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+      const newMetaDescription = document.createElement('meta');
+      newMetaDescription.setAttribute('name', 'description');
+      newMetaDescription.setAttribute('content', 'Task Management Application');
+      document.head.appendChild(newMetaDescription);
     }
   }, []);
-
-  useEffect(() => {
-    initializeMeta();
-  }, [initializeMeta]);
 
   useEffect(() => {
     let socketCleanup: (() => void) | undefined;
@@ -86,7 +85,7 @@ const App = () => {
 
     return () => {
       mounted = false;
-      if (socketCleanup) {
+      if (typeof socketCleanup === 'function') {
         try {
           socketCleanup();
         } catch (error) {
@@ -95,10 +94,6 @@ const App = () => {
       }
     };
   }, [isAuthenticated, init_socket]);
-
-  if (typeof window === 'undefined') {
-    return null;
-  }
 
   return (
     <QueryClientProvider client={queryClient}>
