@@ -32,26 +32,35 @@ const queryClient = new QueryClient({
   }
 });
 
-const ProtectedRoute = memo(({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { auth_token, current_user } = useAppStore();
   const isAuthenticated = Boolean(auth_token && current_user);
   
   return isAuthenticated ? children : <Navigate to="/login" replace />;
-});
+};
 
-const PublicRoute = memo(({ children }: { children: React.ReactNode }) => {
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { auth_token, current_user } = useAppStore();
   const isAuthenticated = Boolean(auth_token && current_user);
   
   return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
-});
+};
 
-const App: React.FC = memo(() => {
+const App = () => {
   const { auth_token, current_user, init_socket } = useAppStore();
   const isAuthenticated = Boolean(auth_token && current_user);
 
   useEffect(() => {
     document.title = "Task Management App";
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const metaDescription = document.createElement('meta');
+      metaDescription.name = 'description';
+      metaDescription.content = 'Task Management Application';
+      document.head.appendChild(metaDescription);
+    }
   }, []);
 
   useEffect(() => {
@@ -105,10 +114,6 @@ const App: React.FC = memo(() => {
       </BrowserRouter>
     </QueryClientProvider>
   );
-});
-
-App.displayName = 'App';
-ProtectedRoute.displayName = 'ProtectedRoute';
-PublicRoute.displayName = 'PublicRoute';
+};
 
 export default App;
