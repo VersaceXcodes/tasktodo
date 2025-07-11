@@ -3,13 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAppStore } from "@/store/main";
 
 const UV_Landing: React.FC = () => {
-  // Get the store actions for updating auth token and current user
   const set_auth_token = useAppStore((state) => state.set_auth_token);
   const set_current_user = useAppStore((state) => state.set_current_user);
   
   const navigate = useNavigate();
 
-  // Define action handlers according to the datamap
   const navigateToLogin = () => {
     navigate("/login");
   };
@@ -19,7 +17,6 @@ const UV_Landing: React.FC = () => {
   };
 
   const activateDemoMode = () => {
-    // Set demo token and demo user details in the global store
     set_auth_token("demo_token");
     set_current_user({
       id: "demo_user",
@@ -28,14 +25,12 @@ const UV_Landing: React.FC = () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     });
-    // Redirect to dashboard after setting demo mode
     navigate("/dashboard");
   };
 
   return (
     <>
       <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-        {/* Hero Banner */}
         <div className="w-full max-w-4xl mx-auto p-4">
           <img 
             src="https://picsum.photos/seed/landing/800/400" 
@@ -50,12 +45,13 @@ const UV_Landing: React.FC = () => {
           </p>
         </div>
 
-        {/* Call-to-Action Buttons */}
         <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
           <button
             type="button"
             onClick={navigateToLogin}
             className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+            aria-label="Log in to your account"
+            role="button"
           >
             Log In
           </button>
@@ -63,6 +59,8 @@ const UV_Landing: React.FC = () => {
             type="button"
             onClick={navigateToSignup}
             className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+            aria-label="Create a new account"
+            role="button"
           >
             Sign Up
           </button>
@@ -70,13 +68,14 @@ const UV_Landing: React.FC = () => {
             type="button"
             onClick={activateDemoMode}
             className="px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition"
+            aria-label="Try demo mode without signing up"
+            role="button"
           >
             Demo Mode
           </button>
         </div>
 
-        {/* Additional informational copy or footer note if needed */}
-        <footer className="mt-16 text-center text-gray-500 text-sm">
+        <footer className="mt-16 text-center text-gray-500 text-sm" role="contentinfo">
           Experience a streamlined way to manage your projects. No sign-up required to try our demo mode.
         </footer>
       </div>

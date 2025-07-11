@@ -3,36 +3,27 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAppStore } from "@/store/main";
 
 const GV_TopNav_Auth: React.FC = () => {
-  // Local state for controlling profile menu visibility and notification count.
   const [profileMenuOpen, setProfileMenuOpen] = useState<boolean>(false);
   const [notificationCount] = useState<number>(0);
 
-  // Accessing global state: current_user and methods for logout.
   const currentUser = useAppStore((state) => state.current_user);
   const set_auth_token = useAppStore((state) => state.set_auth_token);
   const set_current_user = useAppStore((state) => state.set_current_user);
 
-  // useNavigate hook for programmatic navigation.
   const navigate = useNavigate();
 
-  // Action: Redirect user to dashboard when app logo is clicked.
   const handleLogoClick = () => {
     navigate("/dashboard");
   };
 
-  // Action: Toggle profile dropdown menu visibility.
   const toggleProfileMenu = () => {
     setProfileMenuOpen(!profileMenuOpen);
   };
 
-  // Action: Handle user logout, clearing auth state.
   const handleLogout = () => {
-    // Clear global authentication data.
     set_auth_token(null);
     set_current_user(null);
-    // Optionally, close the profile menu.
     setProfileMenuOpen(false);
-    // Optionally, navigate to landing page after logout.
     navigate("/");
   };
 
@@ -40,9 +31,12 @@ const GV_TopNav_Auth: React.FC = () => {
     <>
       <div className="fixed top-0 w-full bg-white shadow z-50">
         <div className="container mx-auto px-4 py-2 flex justify-between items-center">
-          {/* Left section: Logo and navigation link */}
           <div className="flex items-center space-x-4">
-            <Link to="/dashboard" onClick={handleLogoClick}>
+            <Link 
+              to="/dashboard" 
+              onClick={handleLogoClick}
+              aria-label="Go to dashboard"
+            >
               <span className="text-xl font-bold text-blue-600 cursor-pointer">
                 ToDoManager
               </span>
@@ -50,20 +44,23 @@ const GV_TopNav_Auth: React.FC = () => {
             <Link
               to="/dashboard"
               className="text-gray-600 hover:text-gray-800 hidden sm:inline-block"
+              aria-label="Navigate to dashboard"
             >
               Dashboard
             </Link>
           </div>
-          {/* Right section: Notification icon and Profile */}
           <div className="flex items-center space-x-4 relative">
-            {/* Notification Icon */}
-            <div className="relative cursor-pointer">
+            <button
+              className="relative cursor-pointer"
+              aria-label={`Notifications ${notificationCount > 0 ? `(${notificationCount} unread)` : '(none)'}`}
+            >
               <svg
                 className="w-6 h-6 text-gray-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -77,10 +74,15 @@ const GV_TopNav_Auth: React.FC = () => {
                   {notificationCount}
                 </span>
               )}
-            </div>
-            {/* Profile Icon */}
+            </button>
             <div className="relative">
-              <button onClick={toggleProfileMenu} className="flex items-center focus:outline-none">
+              <button 
+                onClick={toggleProfileMenu} 
+                className="flex items-center focus:outline-none"
+                aria-expanded={profileMenuOpen}
+                aria-haspopup="true"
+                aria-label="Profile menu"
+              >
                 {currentUser ? (
                   <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
                     {currentUser.email.charAt(0).toUpperCase()}
@@ -92,10 +94,16 @@ const GV_TopNav_Auth: React.FC = () => {
                 )}
               </button>
               {profileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg py-2 z-10">
+                <div 
+                  className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg py-2 z-10"
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="profile-menu"
+                >
                   <button
                     onClick={handleLogout}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
                   >
                     Logout
                   </button>
@@ -105,7 +113,6 @@ const GV_TopNav_Auth: React.FC = () => {
           </div>
         </div>
       </div>
-      {/* Spacer div to avoid overlaying content with fixed navbar */}
       <div className="h-16"></div>
     </>
   );

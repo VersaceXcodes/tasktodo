@@ -2,17 +2,13 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 const GV_Footer: React.FC = () => {
-  // Dynamically compute the current year
   const current_year = new Date().getFullYear();
-
   const navigate = useNavigate();
 
-  // Action: Redirect to legal information page (e.g., Privacy Policy / Terms of Service)
   const handleLegalLinkClick = () => {
     navigate("/legal");
   };
 
-  // Action: Redirect to the Contact or About page
   const handleContactLinkClick = () => {
     navigate("/contact");
   };
@@ -29,6 +25,8 @@ const GV_Footer: React.FC = () => {
               type="button"
               onClick={handleLegalLinkClick}
               className="text-sm hover:underline focus:outline-none"
+              aria-label="Privacy Policy"
+              role="link"
             >
               Privacy Policy
             </button>
@@ -36,6 +34,8 @@ const GV_Footer: React.FC = () => {
               type="button"
               onClick={handleLegalLinkClick}
               className="text-sm hover:underline focus:outline-none"
+              aria-label="Terms of Service"
+              role="link"
             >
               Terms of Service
             </button>
@@ -43,6 +43,8 @@ const GV_Footer: React.FC = () => {
               type="button"
               onClick={handleContactLinkClick}
               className="text-sm hover:underline focus:outline-none"
+              aria-label="Contact Us"
+              role="link"
             >
               Contact Us
             </button>

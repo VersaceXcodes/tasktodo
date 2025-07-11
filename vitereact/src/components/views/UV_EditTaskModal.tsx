@@ -4,8 +4,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useAppStore } from '@/store/main';
 
-// Assuming we import types from shared zod schemas (if available)
-// Here we define a minimal Task type for type safety
 type Task = {
   id: string;
   user_id: string;
@@ -30,19 +28,17 @@ const UV_EditTaskModal: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Global State
   const authToken = useAppStore((state) => state.auth_token);
   const taskList = useAppStore((state) => state.task_list);
   const update_task = useAppStore((state) => state.update_task);
   const set_ui_modal = useAppStore((state) => state.set_ui_modal);
 
-  // Local states for form fields
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [dueDate, setDueDate] = useState<string>("");
   const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Medium");
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // Check if task is already in global state and pre-populate the form
   useEffect(() => {
     const task = taskList.find((t) => t.id === id);
     if (task) {
@@ -53,7 +49,45 @@ const UV_EditTaskModal: React.FC = () => {
     }
   }, [id, taskList]);
 
-  // If task not found in globalStore, fetch from backend using react-query
+  const validateInputs = (): boolean => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!title.trim()) {
+      newErrors.title = "Title is required";
+    } else if (title.length > 255) {
+      newErrors.title = "Title must be less than 255 characters";
+    }
+
+    if (description && description.length > 1000) {
+      newErrors.description = "Description must be less than 1000 characters";
+    }
+
+    if (dueDate) {
+      const dueDateObj = new Date(dueDate);
+      if (isNaN(dueDateObj.getTime())) {
+        newErrors.dueDate = "Invalid date format";
+      } else if (dueDateObj < new Date(new Date().setHours(0, 0, 0, 0))) {
+        newErrors.dueDate = "Due date cannot be in the past";
+      }
+    }
+
+    if (!["Low", "Medium", "High"].includes(priority)) {
+      newErrors.priority = "Invalid priority value";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const sanitizeInputs = (input: UpdateTaskInput): UpdateTaskInput => {
+    return {
+      title: input.title?.trim(),
+      description: input.description?.trim() || null,
+      due_date: input.due_date?.trim() || null,
+      priority: input.priority,
+    };
+  };
+
   const { isLoading } = useQuery<Task>({
     queryKey: ["task", id],
     queryFn: async () => {
@@ -77,7 +111,6 @@ const UV_EditTaskModal: React.FC = () => {
     },
   });
 
-  // Mutation to update task details on "Save" button click
   const mutation = useMutation<Task, Error, Partial<UpdateTaskInput>>({
     mutationFn: async (updatedData) => {
       const response = await axios.patch(
@@ -90,33 +123,32 @@ const UV_EditTaskModal: React.FC = () => {
       return response.data.data;
     },
     onSuccess: (data) => {
-      // Update the global task list with the updated task
       update_task(data);
-      // Close the edit modal by updating the global UI modal state and navigate back to dashboard
       set_ui_modal("show_edit_task_modal", false);
       navigate("/dashboard");
     },
     onError: (error) => {
       console.error("Failed to update task:", error);
+      setErrors({ submit: "Failed to update task. Please try again." });
     },
   });
 
-  // Handler for saving the updated task
   const handleSave = () => {
-    if (!title.trim()) {
-      alert("Title is required.");
+    if (!validateInputs()) {
       return;
     }
+
     const payload: Partial<UpdateTaskInput> = {
-      title: title.trim(),
-      description: description.trim() ? description.trim() : null,
-      due_date: dueDate.trim() ? dueDate.trim() : null,
+      title,
+      description,
+      due_date: dueDate,
       priority,
     };
-    mutation.mutate(payload);
+
+    const sanitizedPayload = sanitizeInputs(payload);
+    mutation.mutate(sanitizedPayload);
   };
 
-  // Handler for cancelling the edit
   const handleCancel = () => {
     set_ui_modal("show_edit_task_modal", false);
     navigate("/dashboard");
@@ -125,77 +157,34 @@ const UV_EditTaskModal: React.FC = () => {
   return (
     <>
       {isLoading ? (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 z-50" role="dialog" aria-label="Loading">
           <div className="p-4 bg-white rounded shadow">Loading...</div>
         </div>
       ) : (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 z-50" role="dialog" aria-labelledby="modal-title">
           <div className="bg-white rounded shadow-lg w-11/12 md:w-1/2 lg:w-1/3 p-6">
-            <h2 className="text-2xl font-semibold mb-4">Edit Task</h2>
+            <h2 id="modal-title" className="text-2xl font-semibold mb-4">Edit Task</h2>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">Title</label>
+              <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2">Title</label>
               <input
+                id="title"
                 type="text"
-                className="w-full px-3 py-2 border rounded"
+                className={`w-full px-3 py-2 border rounded ${errors.title ? 'border-red-500' : ''}`}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                maxLength={255}
+                aria-required="true"
+                aria-invalid={!!errors.title}
               />
+              {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
             </div>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">Description</label>
+              <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Description</label>
               <textarea
-                className="w-full px-3 py-2 border rounded"
+                id="description"
+                className={`w-full px-3 py-2 border rounded ${errors.description ? 'border-red-500' : ''}`}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">Due Date</label>
-              <input
-                type="date"
-                className="w-full px-3 py-2 border rounded"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">Priority</label>
-              <select
-                className="w-full px-3 py-2 border rounded"
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as "Low" | "Medium" | "High")}
-              >
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-              </select>
-            </div>
-            <div className="flex justify-end space-x-4">
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                onClick={handleSave}
-                disabled={mutation.isLoading}
-              >
-                Save
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-                onClick={handleCancel}
-                disabled={mutation.isLoading}
-              >
-                Cancel
-              </button>
-            </div>
-            {mutation.isError && (
-              <div className="mt-4 text-red-500">
-                Error updating task. Please try again.
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </>
-  );
-};
-
-export default UV_EditTaskModal;
+                maxLength={1000}
+                aria-label="Task description"
+                aria-invalid={

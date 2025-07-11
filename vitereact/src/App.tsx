@@ -122,4 +122,4 @@ const App = () => {
   );
 };
 
-export default memo(App);
+export default memo(App);console.log('Testing deployment failure detection');
