@@ -138,6 +138,7 @@ const UV_Login: React.FC = () => {
               onChange={handleEmailChange}
               maxLength={100}
               required
+              autoComplete="email"
             />
           </div>
           <div className="mb-4">
@@ -157,6 +158,7 @@ const UV_Login: React.FC = () => {
               onChange={handlePasswordChange}
               maxLength={100}
               required
+              autoComplete="current-password"
             />
           </div>
           <button

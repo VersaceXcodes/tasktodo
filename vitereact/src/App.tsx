@@ -32,42 +32,48 @@ const queryClient = new QueryClient({
   }
 });
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute = memo(({ children }: { children: React.ReactNode }) => {
   const { auth_token, current_user } = useAppStore();
   const isAuthenticated = Boolean(auth_token && current_user);
   
   return isAuthenticated ? children : <Navigate to="/login" replace />;
-};
+});
 
-const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+const PublicRoute = memo(({ children }: { children: React.ReactNode }) => {
   const { auth_token, current_user } = useAppStore();
   const isAuthenticated = Boolean(auth_token && current_user);
   
   return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
-};
+});
 
 const App = () => {
   const { auth_token, current_user, init_socket } = useAppStore();
   const isAuthenticated = Boolean(auth_token && current_user);
 
-  useEffect(() => {
-    document.title = "Task Management App";
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const metaDescription = document.createElement('meta');
-      metaDescription.name = 'description';
-      metaDescription.content = 'Task Management Application';
-      document.head.appendChild(metaDescription);
+  const initializeMeta = useCallback(() => {
+    if (typeof document !== 'undefined') {
+      document.title = "Task Management App";
+      
+      const metaDescription = document.head.querySelector('meta[name="description"]');
+      if (!metaDescription) {
+        const newMetaDescription = document.createElement('meta');
+        newMetaDescription.name = 'description';
+        newMetaDescription.content = 'Task Management Application';
+        document.head.appendChild(newMetaDescription);
+      }
     }
   }, []);
 
   useEffect(() => {
+    initializeMeta();
+  }, [initializeMeta]);
+
+  useEffect(() => {
     let socketCleanup: (() => void) | undefined;
+    let mounted = true;
 
     const initializeSocket = async () => {
-      if (isAuthenticated) {
+      if (isAuthenticated && mounted) {
         try {
           socketCleanup = await init_socket();
         } catch (error) {
@@ -79,6 +85,7 @@ const App = () => {
     initializeSocket();
 
     return () => {
+      mounted = false;
       if (socketCleanup) {
         try {
           socketCleanup();
@@ -88,6 +95,10 @@ const App = () => {
       }
     };
   }, [isAuthenticated, init_socket]);
+
+  if (typeof window === 'undefined') {
+    return null;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -116,4 +127,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default memo(App);
