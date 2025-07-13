@@ -187,4 +187,59 @@ const UV_EditTaskModal: React.FC = () => {
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={1000}
                 aria-label="Task description"
-                aria-invalid={
+                aria-invalid={!!errors.description}
+              />
+              {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+            </div>
+            <div className="mb-4">
+              <label htmlFor="dueDate" className="block text-gray-700 text-sm font-bold mb-2">Due Date</label>
+              <input
+                id="dueDate"
+                type="date"
+                className={`w-full px-3 py-2 border rounded ${errors.dueDate ? 'border-red-500' : ''}`}
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                aria-invalid={!!errors.dueDate}
+              />
+              {errors.dueDate && <p className="text-red-500 text-sm mt-1">{errors.dueDate}</p>}
+            </div>
+            <div className="mb-4">
+              <label htmlFor="priority" className="block text-gray-700 text-sm font-bold mb-2">Priority</label>
+              <select
+                id="priority"
+                className={`w-full px-3 py-2 border rounded ${errors.priority ? 'border-red-500' : ''}`}
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as "Low" | "Medium" | "High")}
+                aria-invalid={!!errors.priority}
+              >
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+              {errors.priority && <p className="text-red-500 text-sm mt-1">{errors.priority}</p>}
+            </div>
+            {errors.submit && <p className="text-red-500 text-sm mb-4">{errors.submit}</p>}
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={handleCancel}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+                disabled={mutation.isLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600 disabled:opacity-50"
+                disabled={mutation.isLoading}
+              >
+                {mutation.isLoading ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default UV_EditTaskModal;
