@@ -549,7 +549,7 @@ app.patch("/api/tasks/reorder", authenticateToken, async (req, res) => {
 // ESM workaround for __dirname
 let currentFilename, currentDirname;
 
-// Check if we're in a CommonJS environment (like Jest)
+// Check if we're in a CommonJS environment (like Jest) or if import.meta is not available
 if (typeof __filename !== "undefined" && typeof __dirname !== "undefined") {
   // Use CommonJS globals
   currentFilename = __filename;
@@ -557,10 +557,17 @@ if (typeof __filename !== "undefined" && typeof __dirname !== "undefined") {
 } else {
   // ESM environment - use import.meta.url
   try {
-    currentFilename = fileURLToPath(import.meta.url);
-    currentDirname = path.dirname(currentFilename);
+    // Use eval to avoid Jest parsing import.meta
+    const importMeta = eval("import.meta");
+    if (importMeta && importMeta.url) {
+      currentFilename = fileURLToPath(importMeta.url);
+      currentDirname = path.dirname(currentFilename);
+    } else {
+      currentFilename = "";
+      currentDirname = "";
+    }
   } catch {
-    // Fallback
+    // Fallback for test environments or other cases
     currentFilename = "";
     currentDirname = "";
   }
@@ -596,7 +603,16 @@ export { app, pool };
 
 // Only start the server if this file is run directly (not during tests)
 // Note: In ES modules, we can't use require.main === module, so we'll check if this is the main module
-const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+let isMainModule = false;
+try {
+  if (typeof import.meta !== "undefined" && import.meta.url) {
+    isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+  }
+} catch {
+  // In test environment or other cases, don't start the server
+  isMainModule = false;
+}
+
 if (isMainModule) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
