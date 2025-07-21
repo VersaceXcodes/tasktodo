@@ -547,24 +547,33 @@ app.patch("/api/tasks/reorder", authenticateToken, async (req, res) => {
 // ==============================
 
 // ESM workaround for __dirname
-let __filename, __dirname;
-if (typeof import.meta.url !== "undefined") {
-  __filename = fileURLToPath(import.meta.url);
-  __dirname = path.dirname(__filename);
+let currentFilename, currentDirname;
+
+// Check if we're in a CommonJS environment (like Jest)
+if (typeof __filename !== "undefined" && typeof __dirname !== "undefined") {
+  // Use CommonJS globals
+  currentFilename = __filename;
+  currentDirname = __dirname;
 } else {
-  // Fallback for test environment
-  __filename = "";
-  __dirname = "";
+  // ESM environment - use import.meta.url
+  try {
+    currentFilename = fileURLToPath(import.meta.url);
+    currentDirname = path.dirname(currentFilename);
+  } catch {
+    // Fallback
+    currentFilename = "";
+    currentDirname = "";
+  }
 }
 
 // Only serve static files in production
 if (process.env.NODE_ENV === "production") {
   // Serve static files from the 'public' directory
-  app.use(express.static(path.join(__dirname, "public")));
+  app.use(express.static(path.join(currentDirname, "public")));
 
   // Catch-all route for SPA routing (send index.html for unmatched routes)
   app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
+    res.sendFile(path.join(currentDirname, "public", "index.html"));
   });
 } else {
   // In development, just return a simple message for non-API routes
