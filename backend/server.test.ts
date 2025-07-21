@@ -2,12 +2,12 @@
 
 import request from "supertest";
 import jwt from "jsonwebtoken";
-import { app, pool } from "./server.js"; // import your Express app instance and database pool
+import { app, pool } from "./server"; // import your Express app instance and database pool
 import {
   createUserInputSchema,
   createTaskInputSchema,
   updateTaskInputSchema,
-} from "./schema.js";
+} from "./schema";
 
 // ----------------------
 // Helper Functions
