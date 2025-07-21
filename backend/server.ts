@@ -373,6 +373,54 @@ app.post("/api/tasks", authenticateToken, async (req, res) => {
 });
 
 /*
+  Endpoint: PATCH /api/tasks/reorder
+  Description: Updates the manual order of tasks via a drag-and-drop operation.
+  Expects a payload containing an array of task objects with id and manual_order.
+  Processes the updates in a transaction to ensure atomicity.
+*/
+app.patch("/api/tasks/reorder", authenticateToken, async (req, res) => {
+  try {
+    const user_id = req.user!.user_id;
+    // Inline validation of the reorder payload using Zod-like structure.
+    // Expected format: { tasks: [{ id: string, manual_order: number }, ...] }
+    const reorderPayload = req.body;
+    if (!reorderPayload || !Array.isArray(reorderPayload.tasks)) {
+      return res
+        .status(400)
+        .json({ error: "Invalid payload. Expected tasks array." });
+    }
+
+    // Begin transaction for atomic batch update
+    await pool.query("BEGIN");
+    for (const taskItem of reorderPayload.tasks) {
+      // For each task, update the manual_order and updated_at timestamp.
+      const updateQuery = `
+        UPDATE tasks SET manual_order = $1, updated_at = $2
+        WHERE id = $3 AND user_id = $4
+      `;
+      await pool.query(updateQuery, [
+        taskItem.manual_order,
+        new Date().toISOString(),
+        taskItem.id,
+        user_id,
+      ]);
+    }
+    await pool.query("COMMIT");
+
+    // After reordering, fetch the updated list of tasks for the user.
+    const { rows: tasks } = await pool.query(
+      "SELECT * FROM tasks WHERE user_id = $1 ORDER BY manual_order ASC",
+      [user_id],
+    );
+    res.status(200).json({ data: tasks, count: tasks.length });
+  } catch (error) {
+    await pool.query("ROLLBACK");
+    console.error("Reorder tasks error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+/*
   Endpoint: GET /api/tasks/:id
   Description: Retrieves a specific task by its id.
   Ensures that the task belongs to the authenticated user.
@@ -494,54 +542,6 @@ app.delete("/api/tasks/:id", authenticateToken, async (req, res) => {
   }
 });
 
-/*
-  Endpoint: PATCH /api/tasks/reorder
-  Description: Updates the manual order of tasks via a drag-and-drop operation.
-  Expects a payload containing an array of task objects with id and manual_order.
-  Processes the updates in a transaction to ensure atomicity.
-*/
-app.patch("/api/tasks/reorder", authenticateToken, async (req, res) => {
-  try {
-    const user_id = req.user!.user_id;
-    // Inline validation of the reorder payload using Zod-like structure.
-    // Expected format: { tasks: [{ id: string, manual_order: number }, ...] }
-    const reorderPayload = req.body;
-    if (!reorderPayload || !Array.isArray(reorderPayload.tasks)) {
-      return res
-        .status(400)
-        .json({ error: "Invalid payload. Expected tasks array." });
-    }
-
-    // Begin transaction for atomic batch update
-    await pool.query("BEGIN");
-    for (const taskItem of reorderPayload.tasks) {
-      // For each task, update the manual_order and updated_at timestamp.
-      const updateQuery = `
-        UPDATE tasks SET manual_order = $1, updated_at = $2
-        WHERE id = $3 AND user_id = $4
-      `;
-      await pool.query(updateQuery, [
-        taskItem.manual_order,
-        new Date().toISOString(),
-        taskItem.id,
-        user_id,
-      ]);
-    }
-    await pool.query("COMMIT");
-
-    // After reordering, fetch the updated list of tasks for the user.
-    const { rows: tasks } = await pool.query(
-      "SELECT * FROM tasks WHERE user_id = $1 ORDER BY manual_order ASC",
-      [user_id],
-    );
-    res.status(200).json({ data: tasks, count: tasks.length });
-  } catch (error) {
-    await pool.query("ROLLBACK");
-    console.error("Reorder tasks error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
 // ==============================
 // Static Files & SPA Routing (Production Only)
 // ==============================
@@ -584,13 +584,15 @@ if (process.env.NODE_ENV === "production") {
   });
 } else {
   // In development, just return a simple message for non-API routes
-  app.get("*", (req, res) => {
+  app.get("*", (req, res, next) => {
     if (!req.path.startsWith("/api")) {
       res.json({
         message: "Backend API server running",
         frontend: "http://localhost:5173",
         docs: "/api",
       });
+    } else {
+      next();
     }
   });
 }
@@ -605,8 +607,10 @@ export { app, pool };
 // Note: In ES modules, we can't use require.main === module, so we'll check if this is the main module
 let isMainModule = false;
 try {
-  if (typeof import.meta !== "undefined" && import.meta.url) {
-    isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+  // Use eval to avoid Jest parsing import.meta at compile time
+  const importMeta = eval("import.meta");
+  if (typeof importMeta !== "undefined" && importMeta.url) {
+    isMainModule = process.argv[1] === fileURLToPath(importMeta.url);
   }
 } catch {
   // In test environment or other cases, don't start the server
